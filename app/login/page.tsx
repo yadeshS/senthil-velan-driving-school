@@ -26,7 +26,7 @@ export default function LoginPage() {
         // Staff/owner must go through MFA
         const { data: factorsData } = await supabase.auth.mfa.listFactors();
         const hasVerifiedTOTP = factorsData?.totp?.some(f => f.status === 'verified');
-        router.push(hasVerifiedTOTP ? '/mfa/verify' : '/mfa/setup');
+        window.location.href = hasVerifiedTOTP ? '/mfa/verify' : '/mfa/setup';
       } else {
         router.push('/portal');
       }

@@ -24,7 +24,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
         if (aalData?.currentLevel !== 'aal2') {
           const { data: factors } = await supabase.auth.mfa.listFactors();
           const hasVerified = factors?.totp?.some(f => f.status === 'verified');
-          router.replace(hasVerified ? '/mfa/verify' : '/mfa/setup');
+          window.location.href = hasVerified ? '/mfa/verify' : '/mfa/setup';
           return;
         }
       }
