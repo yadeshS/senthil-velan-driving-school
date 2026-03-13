@@ -18,7 +18,17 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
       if (!profile) { await supabase.auth.signOut(); router.replace('/login'); return; }
       setName(profile.full_name || '');
       setRole(profile.role);
-      // Route staff to staff section, customers to customer section
+      // Enforce MFA (AAL2) for staff and owner
+      if (profile.role === 'staff' || profile.role === 'owner') {
+        const { data: aalData } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+        if (aalData?.currentLevel !== 'aal2') {
+          const { data: factors } = await supabase.auth.mfa.listFactors();
+          const hasVerified = factors?.totp?.some(f => f.status === 'verified');
+          router.replace(hasVerified ? '/mfa/verify' : '/mfa/setup');
+          return;
+        }
+      }
+      // Route to correct section by role
       if (profile.role === 'staff' || profile.role === 'owner' || profile.role === 'driver') {
         if (!pathname.startsWith('/portal/staff')) router.replace('/portal/staff');
       } else if (profile.role === 'customer') {

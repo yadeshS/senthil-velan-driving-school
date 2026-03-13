@@ -23,7 +23,10 @@ export default function LoginPage() {
       const { data: profile } = await supabase
         .from('profiles').select('role').eq('id', data.user.id).single();
       if (profile?.role === 'staff' || profile?.role === 'owner') {
-        router.push('/portal/staff');
+        // Staff/owner must go through MFA
+        const { data: factorsData } = await supabase.auth.mfa.listFactors();
+        const hasVerifiedTOTP = factorsData?.totp?.some(f => f.status === 'verified');
+        router.push(hasVerifiedTOTP ? '/mfa/verify' : '/mfa/setup');
       } else {
         router.push('/portal');
       }
